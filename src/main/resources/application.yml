@@ -1,0 +1,110 @@
+server:
+  port: 8088
+
+spring:
+  application:
+    name: api-gateway
+  codec:
+    max-in-memory-size: 200MB
+  cloud:
+    gateway:
+      httpclient:
+        response-timeout: 300s
+        connect-timeout: 30000
+      server:
+        webflux:
+          routes:
+            - id: users-friendly
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/api/users/**
+              filters:
+                - RewritePath=/api/users/(?<remaining>.*), /api/user-service/user/${remaining}
+                - AuthGatewayFilter
+
+            - id: courses-root
+              uri: lb://COURSE-SERVICE
+              predicates:
+                - Path=/api/courses
+              filters:
+                - RewritePath=/api/courses, /api/course-service/course/alls
+                - AuthGatewayFilter
+
+            - id: courses-friendly
+              uri: lb://COURSE-SERVICE
+              predicates:
+                - Path=/api/courses/**
+              filters:
+                - RewritePath=/api/courses/(?<remaining>.*), /api/course-service/course/${remaining}
+                - AuthGatewayFilter
+
+            - id: quizzes-friendly
+              uri: lb://QUIZ-SERVICE
+              predicates:
+                - Path=/api/quizzes/**
+              filters:
+                - RewritePath=/api/quizzes/(?<remaining>.*), /api/quiz-service/${remaining}
+                - AuthGatewayFilter
+
+            - id: payments-friendly
+              uri: lb://PAYMENT-SERVICE
+              predicates:
+                - Path=/api/payments/**
+              filters:
+                - RewritePath=/api/payments/(?<remaining>.*), /api/payment-service/${remaining}
+                - AuthGatewayFilter
+
+            - id: user-service
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/api/user-service/**
+              filters:
+                - AuthGatewayFilter
+
+            - id: course-service
+              uri: lb://COURSE-SERVICE
+              predicates:
+                - Path=/api/course-service/**
+              filters:
+                - AuthGatewayFilter
+            - id: payment-service
+              uri: lb://PAYMENT-SERVICE
+              predicates:
+                - Path=/api/payment-service/**
+              filters:
+                - AuthGatewayFilter
+            - id: quiz-service
+              uri: lb://QUIZ-SERVICE
+              predicates:
+                - Path=/api/quiz-service/**
+              filters:
+                - AuthGatewayFilter
+
+
+jwt:
+  secretKey: 5+2eqXSVC4XDqxgu2rHXDRSGbRUgCfk9uuTKjoIw1N8=
+
+security:
+  permit:
+    paths:
+      - /api/user-service/user/login
+      - /api/user-service/user/register
+      - /api/user-service/user/instructor
+      - /api/user-service/user/enrolled
+      - /api/course-service/course/alls
+      - /actuator/**
+      - /swagger-ui/**
+      - /v3/api-docs/**
+      - /public/**
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://service-registry:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: false
+    hostname: api-gateway
+    instance-id: api-gateway
+
