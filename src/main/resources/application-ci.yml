@@ -11,6 +11,13 @@ spring:
     username: sa
     password: ""
 
+  cloud:
+    discovery:
+      enabled: false
+    gateway:
+      server:
+          enabled: false
+
   jpa:
     hibernate:
       ddl-auto: none
