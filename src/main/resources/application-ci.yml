@@ -1,0 +1,38 @@
+server:
+  port: 0   # random port → tránh conflict trong CI
+
+spring:
+  application:
+    name: api-gateway
+
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+
+  main:
+    lazy-initialization: true   # start nhanh hơn
+
+  cloud:
+    discovery:
+      enabled: false            # ❌ tắt discovery
+    gateway:
+      enabled: false            # ❌ không cần gateway route
+
+eureka:
+  client:
+    enabled: false              # ❌ tắt hoàn toàn Eureka
+
+management:
+  endpoints:
+    enabled-by-default: false
+
+logging:
+  level:
+    root: WARN
