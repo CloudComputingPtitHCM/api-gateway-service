@@ -11,13 +11,6 @@ spring:
     username: sa
     password: ""
 
-  cloud:
-    discovery:
-      enabled: false
-    gateway:
-      server:
-          enabled: false
-
   jpa:
     hibernate:
       ddl-auto: none
@@ -30,7 +23,8 @@ spring:
     discovery:
       enabled: false            # ❌ tắt discovery
     gateway:
-      enabled: false            # ❌ không cần gateway route
+      server:
+        enabled: false            # ❌ không cần gateway route
 
 eureka:
   client:
