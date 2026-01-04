@@ -53,10 +53,11 @@ jobs:
           echo "${{ secrets.KUBE_CONFIG }}" > $HOME/.kube/config
 
       # 8. Triển khai lên k3s
-      - name: Deploy to k3s
+      - name: Update deployment image
         run: |
-          # cập nhật image trong deployment hiện có
-          kubectl set image deployment/api-gateway \
-            api-gateway=thophandocker230204/api-gateway:${{ github.sha }}
+          kubectl --insecure-skip-tls-verify=true \
+          set image deployment/api-gateway \
+          api-gateway=thophandocker230204/api-gateway:${{ github.sha }}
+
           # rollout restart nếu cần
-          kubectl rollout status deployment/api-gateway
+          kubectl --insecure-skip-tls-verify=true rollout status deployment/api-gateway
