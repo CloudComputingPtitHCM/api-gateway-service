@@ -1,0 +1,61 @@
+name: CI/CD - API Gateway
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-test-buildimage-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Lấy source code
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      # 2. Cài JDK 17
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # 3. Build Maven
+      - name: Build with Maven
+        run: mvn -B clean package -DskipTests
+
+      # 4. Login Docker Hub
+      - name: Login Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 5. Build & push image (tag = git short SHA + latest)
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            thophandocker230204/api-gateway:latest
+            thophandocker230204/api-gateway:${{ github.sha }}
+
+      # 6. Cài kubectl
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+
+      # 7. Load kubeconfig (k3s EC2)
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" > $HOME/.kube/config
+
+      # 8. Triển khai lên k3s
+      - name: Deploy to k3s
+        run: |
+          # cập nhật image trong deployment hiện có
+          kubectl set image deployment/api-gateway \
+            api-gateway=thophandocker230204/api-gateway:${{ github.sha }}
+          # rollout restart nếu cần
+          kubectl rollout status deployment/api-gateway
